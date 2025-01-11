@@ -1,6 +1,4 @@
-import unittest
 from tool_agent_demo.agent import Agent
-from tool_agent_demo.result import Result
 
 
 class TestAgent(Agent):
@@ -21,32 +19,26 @@ class TestAgent(Agent):
         return self.multiply(sum_result, 3)
 
 
-class TestAgentPrint(unittest.TestCase):
-    def test_agent_print(self):
-        agent = TestAgent()
-        print("\nAgent string representation:")
-        print(agent)
+def test_agent_print():
+    agent = TestAgent()
+    print("\nAgent string representation:")
+    print(agent)
 
-        # Basic assertions to ensure the output contains key elements
-        output = str(agent)
+    # Basic assertions to ensure the output contains key elements
+    output = str(agent)
 
-        # Check tools section
-        self.assertIn("Tools:", output)
-        self.assertIn("  - add: Add two numbers together.", output)
-        self.assertIn("  - multiply: Multiply two numbers.", output)
+    # Check tools section
+    assert "Tools:" in output
+    assert "  - add: Add two numbers together." in output
+    assert "  - multiply: Multiply two numbers." in output
 
-        # Check workflows section
-        self.assertIn("Workflows:", output)
-        self.assertIn("  calculate:", output)
-        self.assertIn("    Nodes:", output)
-        self.assertIn("    Edges:", output)
+    # Check workflows section
+    assert "Workflows:" in output
+    assert "  calculate:" in output
+    assert "    Nodes:" in output
+    assert "    Edges:" in output
 
-        # Check workflow graph structure
-        self.assertIn("      - add (inputs: 1 2 outputs: sum_result)", output)
-        self.assertIn(
-            "      - multiply (inputs: sum_result 3 outputs: [return])", output)
-        self.assertIn("      - add -> multiply", output)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    # Check workflow graph structure
+    assert "      - add (inputs: 1 2 outputs: sum_result)" in output
+    assert "      - multiply (inputs: sum_result 3 outputs: [return])" in output
+    assert "      - add -> multiply" in output

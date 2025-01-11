@@ -1,4 +1,3 @@
-from typing import Union
 from tool_agent_demo.agent import Agent
 from tool_agent_demo.result import Result
 
@@ -20,7 +19,7 @@ class TestAgent(Agent):
     def example_workflow(self) -> str:
         return "workflow"
 
-    def normal_function(self, text: Union[str, Result]) -> str:
+    def normal_function(self, text: str | Result) -> str:
         if isinstance(text, Result):
             text = text.value
         return f"normal-{text}"

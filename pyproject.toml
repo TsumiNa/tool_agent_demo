@@ -2,8 +2,9 @@
 name = "tool-agent-demo"
 version = "0.1.0"
 description = "Add your description here"
+license = "Apache-2.0"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = ["pydantic>=2.10.5"]
 
 [project.scripts]
