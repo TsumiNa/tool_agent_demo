@@ -36,9 +36,9 @@ def test_method_collection():
     assert agent.example_workflow() == "workflow"
 
 
-def test_workflow_transformation():
+def test_tool_only_workflow():
     """
-    Test that workflow decorator properly transforms methods into generators.
+    Test workflow transformation with only tool function calls.
 
     Verifies:
     - Each tool call is yielded
@@ -47,7 +47,7 @@ def test_workflow_transformation():
     - Combined tool calls are handled properly
     """
     agent = TestAgent()
-    workflow = agent.test_workflow()
+    workflow = agent.tool_only_workflow()
     steps = list(workflow)
 
     # Should yield after each tool call
@@ -72,6 +72,44 @@ def test_workflow_transformation():
     # Fourth yield: final concat_tool result
     assert isinstance(steps[3], Result)
     assert steps[3].value == "success-test-success"
+
+
+def test_mixed_workflow():
+    """
+    Test workflow transformation with both tool and non-tool function calls.
+
+    Verifies:
+    - Only tool calls are yielded
+    - Non-tool calls are executed without yielding
+    - Results are yielded in correct order
+    - Result values include non-tool function modifications
+    """
+    agent = TestAgent()
+    workflow = agent.mixed_workflow()
+    steps = list(workflow)
+
+    # Should yield after each tool call (not after normal_function)
+    # 1. success_tool
+    # 2. concat_tool(success_tool result, "test")
+    # 3. success_tool | success_tool
+    # 4. concat_tool(previous result, combined result)
+    assert len(steps) == 4
+
+    # First yield: success_tool result
+    assert isinstance(steps[0], Result)
+    assert steps[0].value == "success"
+
+    # Second yield: concat_tool result
+    assert isinstance(steps[1], Result)
+    assert steps[1].value == "success-test"
+
+    # Third yield: combined success_tool results (after normal_function)
+    assert isinstance(steps[2], Result)
+    assert steps[2].unwrap() == ("success", "success")
+
+    # Fourth yield: final concat_tool result (includes normal_function modification)
+    assert isinstance(steps[3], Result)
+    assert steps[3].value == "normal-success-test-success"
 
 
 def test_tool_execution():
