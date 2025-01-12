@@ -2,6 +2,19 @@ from dataclasses import dataclass
 from typing import Any, List, Tuple, TypeVar, Generic, Optional
 
 T = TypeVar('T')
+E = TypeVar('E')
+
+
+def Ok(value: T) -> 'Result[T]':
+    """Create a successful Result with a value."""
+    return Result(value=value)
+
+
+def Err(error: Any) -> 'Result[Any]':
+    """Create a failed Result with an error."""
+    if isinstance(error, Exception):
+        return Result(error=error)
+    return Result(error=Exception(str(error)))
 
 
 @dataclass

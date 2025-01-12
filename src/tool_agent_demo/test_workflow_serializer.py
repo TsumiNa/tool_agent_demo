@@ -71,18 +71,19 @@ def test_workflow_deserialization():
         Node(
             id="node_0",
             type="tool1",
-            inputs=[Port(id="node_0:input:0", name='"test_input"')],
-            outputs=[Port(id="node_0:output:0", name="result1")],
+            inputs=[Port(id="node_0:input:0",
+                         name='"test_input"', type="str")],
+            outputs=[Port(id="node_0:output:0", name="result1", type="str")],
             position={"x": 100, "y": 100}
         ),
         Node(
             id="node_1",
             type="tool2",
             inputs=[
-                Port(id="node_1:input:0", name="result1"),
-                Port(id="node_1:input:1", name='"test_input2"')
+                Port(id="node_1:input:0", name="result1", type="str"),
+                Port(id="node_1:input:1", name='"test_input2"', type="str")
             ],
-            outputs=[Port(id="node_1:output:0", name="final")],
+            outputs=[Port(id="node_1:output:0", name="final", type="str")],
             position={"x": 300, "y": 100}
         )
     ]
@@ -121,8 +122,9 @@ def test_workflow_with_unknown_tool():
         Node(
             id="node_0",
             type="unknown_tool",  # 不存在的工具
-            inputs=[Port(id="node_0:input:0", name='"test_input"')],
-            outputs=[Port(id="node_0:output:0", name="result1")],
+            inputs=[Port(id="node_0:input:0",
+                         name='"test_input"', type="str")],
+            outputs=[Port(id="node_0:output:0", name="result1", type="str")],
             position={"x": 100, "y": 100}
         )
     ]
@@ -152,8 +154,9 @@ def test_workflow_json_serialization():
         Node(
             id="node_0",
             type="tool1",
-            inputs=[Port(id="node_0:input:0", name='"test_input"')],
-            outputs=[Port(id="node_0:output:0", name="result1")],
+            inputs=[Port(id="node_0:input:0",
+                         name='"test_input"', type="str")],
+            outputs=[Port(id="node_0:output:0", name="result1", type="str")],
             position={"x": 100, "y": 100}
         )
     ]
