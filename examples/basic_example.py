@@ -1,5 +1,5 @@
-from tool_agent_demo.agent import Agent
-from tool_agent_demo.result import Result
+from tool_agent_demo import Agent
+from tool_agent_demo import Result
 
 
 class CalculatorAgent(Agent):

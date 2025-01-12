@@ -3,6 +3,9 @@ name = "tool_agent_demo"
 version = "0.1.0"
 description = "Tool Agent Demo"
 requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.32.3",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -16,3 +19,11 @@ filterwarnings = [
     "ignore::pytest.PytestCollectionWarning",
 ]
 markers = ["no_collect: mark a class to not be collected as a test class"]
+
+[dependency-groups]
+dev = [
+    "aiohttp>=3.11.11",
+    "beautifulsoup4>=4.12.3",
+    "numpy>=2.2.1",
+    "pillow>=11.1.0",
+]

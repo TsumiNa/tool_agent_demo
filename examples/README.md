@@ -1,101 +1,147 @@
 # Tool Agent Demo Examples
 
-这个目录包含了使用 tool_agent_demo 包的示例代码。这些示例展示了如何创建和使用工具代理(Agent)、定义工具(Tools)和工作流(Workflows)，以及处理错误和链式操作。
+This directory contains example implementations demonstrating various capabilities of the Tool Agent framework.
 
-## 基础示例 (basic_example.py)
+## Examples Overview
 
-这个示例展示了工具代理的基本用法:
+### Basic Example (basic_example.py)
+A simple example showing the basic concepts of tools and workflows.
 
-- 创建简单的计算器工具
-- 使用 `@Agent.tool` 装饰器定义工具
-- 使用 `@Agent.workflow` 装饰器定义工作流
-- 基本的错误处理
-- 工具的链式调用
+### Advanced Example (advanced_example.py)
+Demonstrates error handling, data storage, and basic workflow combinations.
 
-运行示例:
+### Real-World Example (real_world_example.py)
+A business intelligence system that demonstrates:
+- Time-consuming data processing tasks
+- Complex workflow combinations
+- File I/O operations
+- Data analysis and reporting
+- Error handling and recovery
+
+### Web Scraping Example (web_scraping_example.py)
+Shows how to handle web interactions and parallel processing:
+- Asynchronous HTTP requests
+- HTML parsing and analysis
+- Parallel website processing
+- Caching mechanism
+- Result aggregation
+
+### Image Processing Example (image_processing_example.py)
+Demonstrates CPU-intensive operations and binary data handling:
+- Image loading and saving
+- Image analysis and enhancement
+- Parallel batch processing
+- Progress tracking
+- Result reporting
+
+## Requirements
+
+### Core Dependencies
+```bash
+# Install with uv
+uv add tool-agent-demo
+```
+
+### Example-specific Dependencies
+
+For web_scraping_example.py:
+```bash
+uv add aiohttp beautifulsoup4
+```
+
+For image_processing_example.py:
+```bash
+uv add pillow numpy
+```
+
+## Usage
+
+### Running the Examples
+
+1. Basic Example:
 ```bash
 python examples/basic_example.py
 ```
 
-## 高级示例 (advanced_example.py)
-
-这个示例展示了更高级的功能:
-
-- 数据存储和检索
-- 文本处理
-- 数据验证
-- 复杂的错误处理
-- 多步骤工作流
-- 链式操作
-
-运行示例:
+2. Advanced Example:
 ```bash
 python examples/advanced_example.py
 ```
 
-## 关键概念
-
-### 1. 工具 (Tools)
-
-工具是使用 `@Agent.tool` 装饰器定义的方法。每个工具都应该:
-- 有清晰的文档字符串
-- 返回一个具体的值
-- 在出错时抛出异常
-
-```python
-@Agent.tool
-def my_tool(self, param: str) -> str:
-    """Tool description"""
-    return processed_result
+3. Real-World Example:
+```bash
+python examples/real_world_example.py
 ```
 
-### 2. 工作流 (Workflows)
-
-工作流使用 `@Agent.workflow` 装饰器定义，用于组合多个工具操作:
-- 可以按顺序调用多个工具
-- 使用 `unwrap()` 获取工具的返回值
-- 可以包含错误处理逻辑
-
-```python
-@Agent.workflow
-def my_workflow(self, input: str) -> str:
-    result1 = self.tool1(input)
-    result2 = self.tool2(result1.unwrap())
-    return result2
+4. Web Scraping Example:
+```bash
+python examples/web_scraping_example.py
 ```
 
-### 3. 错误处理
-
-使用 Result 类型进行错误处理:
-- `is_ok()` - 检查是否成功
-- `is_err()` - 检查是否有错误
-- `unwrap()` - 获取结果值或抛出错误
-- 使用 try/except 捕获特定异常
-
-```python
-result = agent.some_tool(input)
-if result.is_ok():
-    value = result.unwrap()
-else:
-    error = result.error
+5. Image Processing Example:
+```bash
+# First, create some sample images
+mkdir -p images
+# Add some .jpg files to the images directory
+python examples/image_processing_example.py
 ```
 
-### 4. 链式操作
+## Key Features Demonstrated
 
-工具结果可以使用 `|` 操作符链式组合:
-```python
-result = (
-    self.tool1(input)
-    | self.tool2(param)
-    | self.tool3()
-)
-```
+### Asynchronous Operations
+- Web requests (web_scraping_example.py)
+- Parallel processing (image_processing_example.py)
+- Workflow execution (real_world_example.py)
 
-## 最佳实践
+### Error Handling
+- Network errors (web_scraping_example.py)
+- File I/O errors (real_world_example.py)
+- Processing errors (image_processing_example.py)
 
-1. 总是为工具和工作流提供清晰的文档字符串
-2. 使用类型注解提高代码可读性
-3. 实现适当的错误处理
-4. 将复杂操作分解为多个工具
-5. 使用工作流组合工具操作
-6. 在需要时使用链式操作简化代码
+### Complex Workflows
+- Multi-step data processing (real_world_example.py)
+- Parallel task execution (web_scraping_example.py)
+- Conditional processing (image_processing_example.py)
+
+### Data Management
+- File I/O operations
+- Caching mechanisms
+- Result aggregation
+- Progress tracking
+
+## Best Practices Shown
+
+1. **Error Handling**
+   - Proper use of Result type for error propagation
+   - Graceful error recovery
+   - User-friendly error messages
+
+2. **Resource Management**
+   - Proper cleanup of resources
+   - Efficient use of memory
+   - Cache management
+
+3. **Code Organization**
+   - Clear separation of tools and workflows
+   - Logical grouping of related functionality
+   - Comprehensive documentation
+
+4. **Performance Optimization**
+   - Parallel processing where appropriate
+   - Caching of expensive operations
+   - Efficient data structures
+
+5. **User Experience**
+   - Progress reporting
+   - Clear output formatting
+   - Helpful error messages
+
+## Contributing
+
+Feel free to add more examples or improve existing ones. When contributing:
+
+1. Follow the existing code style
+2. Add comprehensive documentation
+3. Include error handling
+4. Add appropriate tests
+5. Update this README.md with any new dependencies or usage instructions
