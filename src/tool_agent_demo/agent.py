@@ -296,3 +296,64 @@ class Agent:
         # Mark the method as a workflow
         wrapper._is_workflow = True
         return wrapper
+
+    def to_json(self, file_path: Optional[str] = None) -> str:
+        """
+        Convert Agent's tools and workflows information to JSON format.
+
+        Args:
+            file_path: Optional path to save the JSON output to a file.
+
+        Returns:
+            A JSON string containing the Agent's tools and workflows information.
+        """
+        import json
+
+        data = {
+            "tools": {},
+            "workflows": {}
+        }
+
+        # Collect tools information
+        for tool_name, tool in self._tools.items():
+            doc = inspect.getdoc(tool) or "No description available"
+            sig = inspect.signature(tool)
+            data["tools"][tool_name] = {
+                "description": doc,
+                "parameters": {
+                    name: param.annotation.__name__ if hasattr(param.annotation, '__name__') else str(param.annotation) for name, param in sig.parameters.items()
+                    if name != 'self'
+                }
+            }
+
+        # Collect workflows information
+        for workflow_name in self._workflows:
+            graph = self.get_workflow_graph(workflow_name)
+            if graph:
+                data["workflows"][workflow_name] = {
+                    "source": self._workflow_sources[workflow_name],
+                    "graph": {
+                        "nodes": [
+                            {
+                                "id": node.id,
+                                "type": node.type,
+                                "inputs": [{"name": p.name, "type": p.type} for p in node.inputs],
+                                "outputs": [{"name": p.name, "type": p.type} for p in node.outputs]
+                            } for node in graph.nodes
+                        ],
+                        "edges": [
+                            {
+                                "source": edge.source,
+                                "target": edge.target
+                            } for edge in graph.edges
+                        ]
+                    }
+                }
+
+        json_str = json.dumps(data, indent=2)
+
+        if file_path:
+            with open(file_path, 'w') as f:
+                f.write(json_str)
+
+        return json_str

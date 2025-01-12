@@ -200,3 +200,64 @@ def test_result_as_argument():
     mixed_result = agent.concat_tool("test", success_input)
     assert mixed_result.is_ok()
     assert mixed_result.value == "test-success"
+
+
+def test_to_json():
+    """
+    Test the to_json method for serializing Agent's tools and workflows.
+
+    Verifies:
+    - JSON string output format
+    - File saving functionality
+    - Tools information (description, parameters)
+    - Workflows information (source code, graph)
+    """
+    import json
+    import tempfile
+    import os
+
+    agent = TestAgent()
+
+    # Test direct JSON string output
+    json_str = agent.to_json()
+    data = json.loads(json_str)
+
+    # Verify tools information
+    assert "tools" in data
+    assert "success_tool" in data["tools"]
+    assert "error_tool" in data["tools"]
+    assert "concat_tool" in data["tools"]
+
+    # Verify tool details
+    concat_tool = data["tools"]["concat_tool"]
+    assert "description" in concat_tool
+    assert "parameters" in concat_tool
+    assert "a" in concat_tool["parameters"]
+    assert "b" in concat_tool["parameters"]
+    assert concat_tool["parameters"]["a"] == "str"
+    assert concat_tool["parameters"]["b"] == "str"
+
+    # Verify workflows information
+    assert "workflows" in data
+    assert "tool_only_workflow" in data["workflows"]
+    assert "mixed_workflow" in data["workflows"]
+
+    # Verify workflow details
+    tool_only_workflow = data["workflows"]["tool_only_workflow"]
+    assert "source" in tool_only_workflow
+    assert "graph" in tool_only_workflow
+    assert "nodes" in tool_only_workflow["graph"]
+    assert "edges" in tool_only_workflow["graph"]
+
+    # Test file saving functionality
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.json') as tmp:
+        # Save to temporary file
+        agent.to_json(file_path=tmp.name)
+
+        # Read and verify file content
+        with open(tmp.name) as f:
+            file_data = json.load(f)
+            assert file_data == data
+
+        # Clean up
+        os.unlink(tmp.name)

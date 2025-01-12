@@ -5,7 +5,12 @@ description = "Add your description here"
 license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["click>=8.1.8", "pydantic>=2.10.5"]
+dependencies = [
+    "click>=8.1.8",
+    "pydantic>=2.10.5",
+    "sqlalchemy>=2.0.37",
+    "xxhash>=3.5.0",
+]
 
 [project.scripts]
 tool-agent-demo = "tool_agent_demo.cli:main"

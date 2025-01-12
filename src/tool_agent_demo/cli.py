@@ -1,12 +1,13 @@
 import click
 import os
 import sys
+import subprocess
 import importlib
 import importlib.util
-import subprocess
-from typing import Union, Tuple
+from typing import Tuple, Type
 
 from tool_agent_demo.agent import Agent
+from tool_agent_demo.db import init_db, register_executor
 
 
 def validate_python_env(path: str = None) -> bool:
@@ -184,7 +185,8 @@ if not isinstance(var, type) or not issubclass(var, Agent):
 @click.group()
 def cli():
     """Tool Agent Demo CLI"""
-    pass
+    # Initialize database
+    init_db()
 
 
 @cli.command()
@@ -245,7 +247,7 @@ if not isinstance(var, type) or not issubclass(var, Agent):
 
                 if result.returncode == 1:
                     raise click.BadParameter(
-                        f"Failed to load module in container")
+                        "Failed to load module in container")
                 elif result.returncode == 2:
                     raise click.BadParameter(
                         f"Variable '{var_name}' not found in container")
@@ -261,9 +263,32 @@ if not isinstance(var, type) or not issubclass(var, Agent):
                 subprocess.run(["docker", "rm", "-f", container_name],
                                capture_output=True)
 
-        click.echo(f"Registering {exec_type} executor: {exec_value}")
+        # Import the module to get the Agent class
+        spec = importlib.util.spec_from_file_location("module", py_path)
+        if not spec or not spec.loader:
+            raise click.BadParameter(f"Failed to load module from {py_path}")
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        agent_class = getattr(module, var_name)
+
+        # Register in database and get info
+        executor_info = register_executor(
+            executor_type=exec_type,
+            executor_path=exec_value,
+            entrypoint_path=package_path,
+            variable_name=var_name,
+            agent_class=agent_class
+        )
+
+        click.echo(f"Registered {exec_type} executor: {exec_value}")
         click.echo(f"Package path: {package_path}")
         click.echo(f"Variable name: {var_name}")
+        click.echo(f"Executor ID: {executor_info['id']}")
+        click.echo("\nAgent Information:")
+        click.echo(f"Tools: {len(executor_info['agent_info']['tools'])}")
+        click.echo(f"Workflows: {
+                   len(executor_info['agent_info']['workflows'])}")
 
     except subprocess.CalledProcessError as e:
         raise click.ClickException(f"Command failed: {e}")

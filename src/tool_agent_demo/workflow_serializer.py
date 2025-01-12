@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 class Port(BaseModel):
     id: str = Field(description="端口ID，格式：node_id:input/output:index")
     name: str = Field(description="变量名或字面量值")
+    type: str = Field(description="端口的数据类型")
 
 
 class Node(BaseModel):
@@ -55,14 +56,18 @@ class WorkflowSerializer:
             for i, arg in enumerate(func_call.args):
                 port_id = f"{node_id}:input:{i}"
                 if isinstance(arg, ast.Name):
-                    inputs.append(Port(id=port_id, name=arg.id))
+                    # 由于AST中无法获取类型信息，默认为Any
+                    inputs.append(Port(id=port_id, name=arg.id, type="Any"))
                 elif isinstance(arg, ast.Constant):
-                    inputs.append(Port(id=port_id, name=repr(arg.value)))
+                    inputs.append(Port(id=port_id, name=repr(
+                        arg.value), type=type(arg.value).__name__))
 
             outputs = []
             if func_call.target:
                 port_id = f"{node_id}:output:0"
-                outputs.append(Port(id=port_id, name=func_call.target))
+                # 由于AST中无法获取类型信息，默认为Any
+                outputs.append(
+                    Port(id=port_id, name=func_call.target, type="Any"))
 
             # 创建节点
             nodes.append(Node(
