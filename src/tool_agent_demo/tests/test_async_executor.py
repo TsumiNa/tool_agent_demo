@@ -3,39 +3,47 @@ import asyncio
 from pathlib import Path
 import sys
 import json
+import os
 from unittest.mock import MagicMock, patch
 
 from fastapi import HTTPException
 from tool_agent_demo.api.executor import AsyncExecutor
 from tool_agent_demo.core.result import Result, Ok, Err
 
-# Mock class for testing
+# Set Jupyter platform dirs
+os.environ["JUPYTER_PLATFORM_DIRS"] = "1"
+
+# Test fixtures and helpers
 
 
-class TestAgent:
-    def __init__(self):
-        self._tools = {
-            "test_tool": self.test_tool,
-            "error_tool": self.error_tool
-        }
-        self._workflows = {
-            "test_workflow": self.test_workflow,
-            "error_workflow": self.error_workflow
-        }
+def create_test_agent():
+    """Create a test agent instance with tools and workflows"""
+    class _TestAgent:
+        def __init__(self):
+            self._tools = {
+                "test_tool": self.test_tool,
+                "error_tool": self.error_tool
+            }
+            self._workflows = {
+                "test_workflow": self.test_workflow,
+                "error_workflow": self.error_workflow
+            }
 
-    def test_tool(self, arg1: str) -> Result[str]:
-        return Ok(f"Tool result: {arg1}")
+        def test_tool(self, arg1: str) -> Result[str]:
+            return Ok(f"Tool result: {arg1}")
 
-    def error_tool(self) -> Result[str]:
-        return Err("Tool error")
+        def error_tool(self) -> Result[str]:
+            return Err("Tool error")
 
-    def test_workflow(self, arg1: str):
-        yield f"Step 1: {arg1}"
-        yield Ok(f"Workflow result: {arg1}")
+        def test_workflow(self, arg1: str):
+            yield f"Step 1: {arg1}"
+            yield Ok(f"Workflow result: {arg1}")
 
-    def error_workflow(self):
-        yield "Step 1"
-        yield Err("Workflow error")
+        def error_workflow(self):
+            yield "Step 1"
+            yield Err("Workflow error")
+
+    return _TestAgent()
 
 
 @pytest.fixture
@@ -203,3 +211,145 @@ async def test_kernel_initialization_failure():
     with pytest.raises(HTTPException) as exc_info:
         await executor._init_kernel()
     assert "Python interpreter not found" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_workflow_step_by_step(executor, tmp_path):
+    """Test step by step workflow execution"""
+    # Create test module file
+    module_path = tmp_path / "test_module.py"
+    with open(module_path, "w") as f:
+        f.write("""
+from tool_agent_demo.core.result import Result, Ok, Err
+
+class TestAgent:
+    def __init__(self):
+        self._workflows = {"test": self.test_workflow}
+
+    def test_workflow(self, msg: str):
+        yield f"Step 1: {msg}"
+        yield f"Step 2: {msg}"
+        yield Ok(f"Success: {msg}")
+""")
+
+    # First step
+    result = await executor.execute(
+        str(module_path.with_suffix("")),
+        "TestAgent",
+        "workflows",
+        "test",
+        ["Hello"],
+        {},
+        step_by_step=True
+    )
+    assert "Step 1: Hello" == result["result"]
+    assert "kernel_id" in result
+    kernel_id = result["kernel_id"]
+
+    # Second step
+    result = await executor.execute(
+        str(module_path.with_suffix("")),
+        "TestAgent",
+        "workflows",
+        "test",
+        ["Hello"],
+        {},
+        step_by_step=True,
+        kernel_id=kernel_id
+    )
+    assert "Step 2: Hello" == result["result"]
+    assert result["kernel_id"] == kernel_id
+
+    # Final step
+    result = await executor.execute(
+        str(module_path.with_suffix("")),
+        "TestAgent",
+        "workflows",
+        "test",
+        ["Hello"],
+        {},
+        step_by_step=True,
+        kernel_id=kernel_id
+    )
+    assert "Success: Hello" == result["result"]
+    assert result["kernel_id"] is None
+
+    # Verify kernel was cleaned up
+    assert kernel_id not in executor.active_kernels
+
+
+@pytest.mark.asyncio
+async def test_workflow_invalid_kernel_id(executor, tmp_path):
+    """Test workflow execution with invalid kernel ID"""
+    # Create test module file
+    module_path = tmp_path / "test_module.py"
+    with open(module_path, "w") as f:
+        f.write("""
+from tool_agent_demo.core.result import Result, Ok, Err
+
+class TestAgent:
+    def __init__(self):
+        self._workflows = {"test": self.test_workflow}
+
+    def test_workflow(self, msg: str):
+        yield f"Step: {msg}"
+        yield Ok(f"Success: {msg}")
+""")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await executor.execute(
+            str(module_path.with_suffix("")),
+            "TestAgent",
+            "workflows",
+            "test",
+            ["Hello"],
+            {},
+            step_by_step=True,
+            kernel_id="k99xyz"  # Non-existent kernel ID
+        )
+    assert "Kernel k99xyz not found" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_workflow_parameter_mismatch(executor, tmp_path):
+    """Test workflow execution with mismatched parameters"""
+    # Create test module file
+    module_path = tmp_path / "test_module.py"
+    with open(module_path, "w") as f:
+        f.write("""
+from tool_agent_demo.core.result import Result, Ok, Err
+
+class TestAgent:
+    def __init__(self):
+        self._workflows = {"test": self.test_workflow}
+
+    def test_workflow(self, msg: str):
+        yield f"Step: {msg}"
+        yield Ok(f"Success: {msg}")
+""")
+
+    # Start workflow
+    result = await executor.execute(
+        str(module_path.with_suffix("")),
+        "TestAgent",
+        "workflows",
+        "test",
+        ["Hello"],
+        {},
+        step_by_step=True
+    )
+    kernel_id = result["kernel_id"]
+
+    # Try to continue with different parameters
+    with pytest.raises(HTTPException) as exc_info:
+        await executor.execute(
+            str(module_path.with_suffix("")),
+            "TestAgent",
+            "workflows",
+            "test",
+            ["Different"],  # Different argument
+            {},
+            step_by_step=True,
+            kernel_id=kernel_id
+        )
+    assert "Kernel parameters do not match" in str(exc_info.value)

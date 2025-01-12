@@ -1,33 +1,13 @@
 [project]
-name = "tool-agent-demo"
+name = "tool_agent_demo"
 version = "0.1.0"
-description = "Add your description here"
-license = "Apache-2.0"
-readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [
-    "click>=8.1.8",
-    "fastapi[standard]>=0.110.0",
-    "ipykernel>=6.29.5",
-    "ipython>=8.31.0",
-    "jupyter-client>=8.6.3",
-    "pydantic>=2.10.5",
-    "sqlalchemy>=2.0.37",
-    "xxhash>=3.5.0",
-]
-
-[project.scripts]
-tool-agent-demo = "tool_agent_demo.cli:main"
-run = "tool_agent_demo.cli:run_server"
+description = "Tool Agent Demo"
+requires-python = ">=3.12"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[dependency-groups]
-dev = ["pytest-asyncio>=0.25.2", "pytest>=8.3.4"]
-
 [tool.pytest.ini_options]
-filterwarnings = ["ignore::pytest.PytestCollectionWarning"]
 asyncio_mode = "auto"
-markers = ["asyncio: mark test as async/await test"]
+asyncio_default_fixture_loop_scope = "function"
