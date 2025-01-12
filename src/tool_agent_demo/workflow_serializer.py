@@ -1,34 +1,30 @@
 from typing import Dict, List, Any, Optional, Set, Union
 import ast
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class Port:
-    id: str  # 端口ID，格式：node_id:input/output:index
-    name: str  # 变量名或字面量值
+class Port(BaseModel):
+    id: str = Field(description="端口ID，格式：node_id:input/output:index")
+    name: str = Field(description="变量名或字面量值")
 
 
-@dataclass
-class Node:
-    id: str  # 节点ID
-    type: str  # 函数名
-    inputs: List[Port]  # 输入端口列表
-    outputs: List[Port]  # 输出端口列表
-    position: Dict[str, int]  # 节点位置
+class Node(BaseModel):
+    id: str = Field(description="节点ID")
+    type: str = Field(description="函数名")
+    inputs: List[Port] = Field(description="输入端口列表")
+    outputs: List[Port] = Field(description="输出端口列表")
+    position: Dict[str, int] = Field(description="节点位置")
 
 
-@dataclass
-class Edge:
-    id: str  # 边ID
-    source: str  # 源端口ID (node_id:output:index)
-    target: str  # 目标端口ID (node_id:input:index)
+class Edge(BaseModel):
+    id: str = Field(description="边ID")
+    source: str = Field(description="源端口ID (node_id:output:index)")
+    target: str = Field(description="目标端口ID (node_id:input:index)")
 
 
-@dataclass
-class WorkflowGraph:
-    nodes: List[Node]
-    edges: List[Edge]
+class WorkflowGraph(BaseModel):
+    nodes: List[Node] = Field(description="工作流中的所有节点")
+    edges: List[Edge] = Field(description="工作流中的所有边")
 
 
 class WorkflowSerializer:
@@ -97,6 +93,30 @@ class WorkflowSerializer:
         return WorkflowGraph(nodes=nodes, edges=edges)
 
     @staticmethod
+    def to_json(graph: WorkflowGraph) -> str:
+        """Convert workflow graph to JSON string
+
+        Args:
+            graph: The workflow graph to serialize
+
+        Returns:
+            JSON string representation of the workflow graph
+        """
+        return graph.model_dump_json(indent=2)
+
+    @staticmethod
+    def from_json(json_str: str) -> WorkflowGraph:
+        """Create workflow graph from JSON string
+
+        Args:
+            json_str: JSON string representation of a workflow graph
+
+        Returns:
+            WorkflowGraph instance created from the JSON
+        """
+        return WorkflowGraph.model_validate_json(json_str)
+
+    @staticmethod
     def deserialize_workflow(graph: WorkflowGraph) -> str:
         """Convert nodes and edges back to workflow code"""
         # 构建变量依赖图
@@ -162,11 +182,14 @@ class WorkflowSerializer:
     class DependencyAnalyzer(ast.NodeVisitor):
         """分析AST中的函数调用和变量依赖关系"""
 
-        @dataclass
-        class FunctionCall:
-            func_name: str
-            args: List[ast.expr]
-            target: Optional[str] = None
+        class FunctionCall(BaseModel):
+            func_name: str = Field(description="函数名称")
+            args: List[ast.expr] = Field(description="函数参数列表")
+            target: Optional[str] = Field(default=None, description="赋值目标变量名")
+
+            model_config = {
+                "arbitrary_types_allowed": True
+            }
 
         def __init__(self):
             self.function_calls: List[WorkflowSerializer.DependencyAnalyzer.FunctionCall] = [

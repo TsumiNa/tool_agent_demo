@@ -1,6 +1,6 @@
 import pytest
 from tool_agent_demo.agent import Agent, DeserializationError
-from tool_agent_demo.workflow_serializer import Node, Edge, Port, WorkflowGraph
+from tool_agent_demo.workflow_serializer import Node, Edge, Port, WorkflowGraph, WorkflowSerializer
 
 
 class TestAgent(Agent):
@@ -144,3 +144,51 @@ def test_workflow_not_found():
 def test_get_nonexistent_workflow():
     agent = TestAgent()
     assert agent.get_workflow_graph("nonexistent") is None
+
+
+def test_workflow_json_serialization():
+    # Create a test workflow graph
+    nodes = [
+        Node(
+            id="node_0",
+            type="tool1",
+            inputs=[Port(id="node_0:input:0", name='"test_input"')],
+            outputs=[Port(id="node_0:output:0", name="result1")],
+            position={"x": 100, "y": 100}
+        )
+    ]
+    edges = []
+    original_graph = WorkflowGraph(nodes=nodes, edges=edges)
+
+    # Convert to JSON
+    json_str = WorkflowSerializer.to_json(original_graph)
+    assert isinstance(json_str, str)
+    assert "node_0" in json_str
+    assert "tool1" in json_str
+
+    # Convert back from JSON
+    restored_graph = WorkflowSerializer.from_json(json_str)
+    assert isinstance(restored_graph, WorkflowGraph)
+
+    # Verify structure is preserved
+    assert len(restored_graph.nodes) == len(original_graph.nodes)
+    assert len(restored_graph.edges) == len(original_graph.edges)
+
+    # Verify node details
+    original_node = original_graph.nodes[0]
+    restored_node = restored_graph.nodes[0]
+    assert restored_node.id == original_node.id
+    assert restored_node.type == original_node.type
+    assert len(restored_node.inputs) == len(original_node.inputs)
+    assert len(restored_node.outputs) == len(original_node.outputs)
+    assert restored_node.position == original_node.position
+
+
+def test_workflow_json_invalid():
+    # Test with invalid JSON
+    with pytest.raises(ValueError):
+        WorkflowSerializer.from_json("invalid json")
+
+    # Test with valid JSON but wrong structure
+    with pytest.raises(ValueError):
+        WorkflowSerializer.from_json('{"invalid": "structure"}')
