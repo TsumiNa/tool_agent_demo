@@ -1,7 +1,9 @@
-from tool_agent_demo.agent import Agent
+import pytest
+from tool_agent_demo import Agent
 
 
-class TestAgent(Agent):
+@pytest.mark.no_collect
+class TestAgent(Agent):  # This is a helper class, not a test class
     @Agent.tool
     def add(self, a: int, b: int) -> int:
         """Add two numbers together."""

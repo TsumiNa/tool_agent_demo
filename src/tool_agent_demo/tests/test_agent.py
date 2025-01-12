@@ -9,8 +9,8 @@ This module contains tests for:
 5. Result handling when used as tool arguments
 """
 
-from tool_agent_demo.result import Result
-from tool_agent_demo.test_helpers import TestAgent
+from tool_agent_demo import Result
+from tool_agent_demo.tests.test_helpers import TestAgent
 
 
 def test_method_collection():

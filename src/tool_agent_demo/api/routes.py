@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Dict, Any
 
 from fastapi import FastAPI, HTTPException
 
 from tool_agent_demo.core.db import list_executors, get_executor
 from tool_agent_demo.api.models import AgentInfo, ToolRequest, WorkflowRequest
-from tool_agent_demo.api.executor import get_executor_wrapper
+from tool_agent_demo.api.executor import get_executor_wrapper, executors
 
 
 # Create FastAPI app
@@ -89,5 +89,52 @@ async def call_workflow(agent_id: str, workflow_name: str, request: WorkflowRequ
         "workflows",
         workflow_name,
         request.args,
-        request.kwargs
+        request.kwargs,
+        step_by_step=True
+    )
+
+
+@app.post("/agents/kernel/{kernel_id}/next")
+async def continue_execution(kernel_id: str):
+    """Continue execution for a given kernel"""
+    # Find the executor that owns this kernel
+    owner_executor = None
+    for executor in executors.values():
+        if kernel_id in executor.active_kernels:
+            owner_executor = executor
+            break
+
+    if not owner_executor:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Kernel {kernel_id} not found"
+        )
+
+    # Get stored kernel info
+    stored_info = owner_executor.active_kernels[kernel_id]
+    module_path, var_name, method_name, args, kwargs = stored_info
+
+    # Continue execution
+    return await owner_executor.execute(
+        module_path,
+        var_name,
+        "workflows",  # Only workflows use kernels
+        method_name,
+        args,
+        kwargs,
+        kernel_id=kernel_id
+    )
+
+
+@app.post("/agents/kernel/{kernel_id}/cancel")
+async def cancel_execution(kernel_id: str):
+    """Cancel execution for a given kernel"""
+    # Find the executor that owns this kernel
+    for executor in executors.values():
+        if await executor.cancel_kernel(kernel_id):
+            return {"message": f"Kernel {kernel_id} cancelled successfully"}
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Kernel {kernel_id} not found"
     )

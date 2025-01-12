@@ -65,15 +65,29 @@ class AsyncExecutor:
                 detail=f"Failed to initialize kernel: {str(e)}"
             )
 
-    async def _cleanup(self):
+    async def _cleanup(self, kernel_id: Optional[str] = None):
         """Cleanup kernel"""
-        if self.kc:
-            self.kc.stop_channels()
-        if self.km:
-            self.km.shutdown_kernel()
-            self.km = None
-            self.kc = None
-            self.initialized = False
+        if kernel_id:
+            # Clean up specific kernel
+            if kernel_id in self.active_kernels:
+                del self.active_kernels[kernel_id]
+        else:
+            # Clean up everything
+            if self.kc:
+                self.kc.stop_channels()
+            if self.km:
+                self.km.shutdown_kernel()
+                self.km = None
+                self.kc = None
+                self.initialized = False
+            self.active_kernels.clear()
+
+    async def cancel_kernel(self, kernel_id: str) -> bool:
+        """Cancel a specific kernel execution"""
+        if kernel_id in self.active_kernels:
+            await self._cleanup(kernel_id)
+            return True
+        return False
 
     async def execute(self, module_path: str, var_name: str, method_type: str,
                       method_name: str, args: List[Any], kwargs: Dict[str, Any],
@@ -266,7 +280,7 @@ except Exception as e:
                 if kernel_id and (
                     'kernel_id' not in output or output['kernel_id'] is None
                 ):
-                    del self.active_kernels[kernel_id]
+                    await self._cleanup(kernel_id)
 
                 return output
             except Exception as e:

@@ -1,9 +1,10 @@
 import pytest
-from tool_agent_demo.agent import Agent, DeserializationError
-from tool_agent_demo.workflow_serializer import Node, Edge, Port, WorkflowGraph, WorkflowSerializer
+from tool_agent_demo import Agent, DeserializationError
+from tool_agent_demo.serializers.workflow_serializer import Node, Edge, Port, WorkflowGraph, WorkflowSerializer
 
 
-class TestAgent(Agent):
+@pytest.mark.no_collect
+class TestAgent(Agent):  # This is a helper class, not a test class
     @Agent.tool
     def tool1(self, input1: str) -> str:
         return f"processed_{input1}"

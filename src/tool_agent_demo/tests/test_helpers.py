@@ -1,8 +1,9 @@
-from tool_agent_demo.agent import Agent
-from tool_agent_demo.result import Result
+import pytest
+from tool_agent_demo import Agent, Result
 
 
-class TestAgent(Agent):
+@pytest.mark.no_collect
+class TestAgent(Agent):  # This is a helper class, not a test class
     @Agent.tool
     def success_tool(self) -> str:
         return "success"
