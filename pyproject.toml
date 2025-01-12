@@ -15,7 +15,7 @@ dependencies = [
 
 [project.scripts]
 tool-agent-demo = "tool_agent_demo.cli:main"
-run = "uvicorn.main:run --app-dir src --app tool_agent_demo.api:app --reload"
+run = "tool_agent_demo.cli:run_server"
 
 [build-system]
 requires = ["hatchling"]

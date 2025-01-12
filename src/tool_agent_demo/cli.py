@@ -296,6 +296,18 @@ if not isinstance(var, type) or not issubclass(var, Agent):
         raise click.ClickException(str(e))
 
 
+def run_server():
+    """Run the uvicorn development server."""
+    import uvicorn
+    uvicorn.run(
+        "tool_agent_demo.api:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        app_dir="src"
+    )
+
+
 def main():
     cli()
 
