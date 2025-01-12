@@ -4,10 +4,9 @@ import sys
 import subprocess
 import importlib
 import importlib.util
-from typing import Tuple, Type
+from typing import Tuple
 
-from tool_agent_demo.agent import Agent
-from tool_agent_demo.db import init_db, register_executor
+from tool_agent_demo.core.db import init_db, register_executor
 
 
 def validate_python_env(path: str = None) -> bool:

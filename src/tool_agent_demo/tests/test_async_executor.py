@@ -6,8 +6,8 @@ import json
 from unittest.mock import MagicMock, patch
 
 from fastapi import HTTPException
-from tool_agent_demo.api import AsyncExecutor
-from tool_agent_demo.result import Result, Ok, Err
+from tool_agent_demo.api.executor import AsyncExecutor
+from tool_agent_demo.core.result import Result, Ok, Err
 
 # Mock class for testing
 
@@ -76,7 +76,7 @@ async def test_execute_tool_success(executor, tmp_path):
     module_path = tmp_path / "test_module.py"
     with open(module_path, "w") as f:
         f.write("""
-from tool_agent_demo.result import Result, Ok, Err
+from tool_agent_demo.core.result import Result, Ok, Err
 
 class TestAgent:
     def __init__(self):
@@ -105,7 +105,7 @@ async def test_execute_tool_error(executor, tmp_path):
     module_path = tmp_path / "test_module.py"
     with open(module_path, "w") as f:
         f.write("""
-from tool_agent_demo.result import Result, Ok, Err
+from tool_agent_demo.core.result import Result, Ok, Err
 
 class TestAgent:
     def __init__(self):
@@ -134,7 +134,7 @@ async def test_execute_workflow_success(executor, tmp_path):
     module_path = tmp_path / "test_module.py"
     with open(module_path, "w") as f:
         f.write("""
-from tool_agent_demo.result import Result, Ok, Err
+from tool_agent_demo.core.result import Result, Ok, Err
 
 class TestAgent:
     def __init__(self):
@@ -164,7 +164,7 @@ async def test_execute_workflow_error(executor, tmp_path):
     module_path = tmp_path / "test_module.py"
     with open(module_path, "w") as f:
         f.write("""
-from tool_agent_demo.result import Result, Ok, Err
+from tool_agent_demo.core.result import Result, Ok, Err
 
 class TestAgent:
     def __init__(self):

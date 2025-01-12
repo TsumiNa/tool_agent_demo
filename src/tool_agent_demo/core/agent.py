@@ -3,8 +3,8 @@ from functools import wraps, partial
 import ast
 import inspect
 
-from tool_agent_demo.result import Result
-from tool_agent_demo.workflow_serializer import WorkflowSerializer, WorkflowGraph
+from tool_agent_demo.core.result import Result
+from tool_agent_demo.serializers.workflow_serializer import WorkflowSerializer, WorkflowGraph
 
 T = TypeVar('T', bound='Agent')
 F = TypeVar('F', bound=Callable[..., Any])
