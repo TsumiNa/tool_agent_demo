@@ -5,12 +5,10 @@ description = "Add your description here"
 license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "pydantic>=2.10.5",
-]
+dependencies = ["click>=8.1.8", "pydantic>=2.10.5"]
 
 [project.scripts]
-tool-agent-demo = "tool_agent_demo:main"
+tool-agent-demo = "tool_agent_demo.cli:main"
 
 [build-system]
 requires = ["hatchling"]
