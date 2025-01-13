@@ -4,7 +4,15 @@ version = "0.1.0"
 description = "Tool Agent Demo"
 requires-python = ">=3.12"
 dependencies = [
+    "click>=8.1.8",
+    "fastapi[standard]>=0.115.6",
+    "ipykernel>=6.29.5",
+    "jupyter-client>=8.6.3",
+    "pydantic>=2.10.5",
     "requests>=2.32.3",
+    "sqlalchemy>=2.0.37",
+    "uvicorn>=0.27.1",
+    "xxhash>=3.5.0",
 ]
 
 [build-system]
@@ -27,3 +35,6 @@ dev = [
     "numpy>=2.2.1",
     "pillow>=11.1.0",
 ]
+
+[project.scripts]
+tool-agent = "tool_agent_demo.cli.cli:main"

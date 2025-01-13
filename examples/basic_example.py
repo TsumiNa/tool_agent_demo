@@ -24,7 +24,7 @@ class CalculatorAgent(Agent):
     def calculate_average(self, numbers: list[float]) -> Result:
         """Calculate the average of a list of numbers"""
         # Add all numbers using reduce
-        total = None
+        total = 0
         for num in numbers:
             total = self.add(total, num)
         # Divide by count to get average
