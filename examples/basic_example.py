@@ -24,13 +24,9 @@ class CalculatorAgent(Agent):
     def calculate_average(self, numbers: list[float]) -> Result:
         """Calculate the average of a list of numbers"""
         # Add all numbers using reduce
-        total = 0
+        total = None
         for num in numbers:
-            result = self.add(total, num)
-            if result.is_err():
-                return result
-            total = result.unwrap()
-
+            total = self.add(total, num)
         # Divide by count to get average
         return self.divide(total, len(numbers))
 
@@ -39,8 +35,8 @@ class CalculatorAgent(Agent):
         """Demonstrate chaining operations using the | operator"""
         # First multiply a and b, then add 10 to the result
         mult_result = self.multiply(a, b)
-        if mult_result.is_err():
-            return mult_result
+        # if mult_result.is_err():
+        #     return mult_result
         final_result = self.add(mult_result.unwrap(), 10)
         return final_result
 
